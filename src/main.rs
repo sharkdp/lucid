@@ -15,6 +15,14 @@ enum LucidError {
     DurationNegative,
 }
 
+/// Determines how much information should be printed.
+#[derive(Debug, Clone, Copy, PartialEq, PartialOrd)]
+enum VerbosityLevel {
+    Quiet,
+    Normal,
+    Verbose,
+}
+
 impl LucidError {
     fn message(&self) -> &str {
         match self {
@@ -27,18 +35,34 @@ impl LucidError {
 struct OutputHandler<'a> {
     handle: io::StdoutLock<'a>,
     prefix: &'a str,
-    verbose: bool,
+    verbosity_level: VerbosityLevel,
 }
 
 impl<'a> OutputHandler<'a> {
-    fn new(handle: io::StdoutLock<'a>, prefix: &'a str, verbose: bool) -> Self {
-        OutputHandler { handle, prefix, verbose }
+    fn new(handle: io::StdoutLock<'a>, prefix: &'a str, verbosity_level: VerbosityLevel) -> Self {
+        OutputHandler {
+            handle,
+            prefix,
+            verbosity_level,
+        }
     }
 
     fn print(&mut self, msg: &str) {
-        if self.verbose {
-            writeln!(self.handle, "{} {}", self.prefix, msg).ok();
+        match self.verbosity_level {
+            VerbosityLevel::Verbose | VerbosityLevel::Normal => self.print_with_prefix(msg),
+            _ => {}
         }
+    }
+
+    fn print_verbose(&mut self, msg: &str) {
+        match self.verbosity_level {
+            VerbosityLevel::Verbose => self.print_with_prefix(msg),
+            _ => {}
+        }
+    }
+
+    fn print_with_prefix(&mut self, msg: &str) {
+        writeln!(self.handle, "{} {}", self.prefix, msg).ok();
     }
 }
 
@@ -75,6 +99,12 @@ fn run() -> Result<()> {
                 .short("v")
                 .help("Be verbose"),
         ).arg(
+            Arg::with_name("quiet")
+                .long("quiet")
+                .short("q")
+                .conflicts_with("verbose")
+                .help("Do not output anything"),
+        ).arg(
             Arg::with_name("prefix")
                 .long("prefix")
                 .short("p")
@@ -97,14 +127,20 @@ fn run() -> Result<()> {
         .map_err(|_| LucidError::DurationParseError)
         .and_then(duration_from_float)?;
 
-    let verbose = matches.is_present("verbose");
+    let verbosity_level = if matches.is_present("verbose") {
+        VerbosityLevel::Verbose
+    } else if matches.is_present("quiet") {
+        VerbosityLevel::Quiet
+    } else {
+        VerbosityLevel::Normal
+    };
 
     let no_interrupt = matches.is_present("no-interrupt");
 
     let prefix = matches.value_of("prefix").unwrap_or("lucid");
 
     let stdout = io::stdout();
-    let mut output = OutputHandler::new(stdout.lock(), prefix, verbose);
+    let mut output = OutputHandler::new(stdout.lock(), prefix, verbosity_level);
 
     output.print(&format!(
         "Going to sleep for {}",
@@ -148,14 +184,14 @@ fn run() -> Result<()> {
             thread::sleep(cycle_time);
         }
 
-        output.print(&format!(
+        output.print_verbose(&format!(
             "Still dreaming after {}",
             duration_as_str(&since_start)
         ));
     }
 
     output.print(&format!(
-        "Waking up after {}",
+        "Woke up after {}",
         duration_as_str(&start_time.elapsed())
     ));
 
@@ -202,4 +238,11 @@ fn test_duration_from_float() {
     );
 
     assert_eq!(Err(LucidError::DurationNegative), duration_from_float(-1.2));
+}
+
+#[test]
+fn test_verbosity_level() {
+    assert!(VerbosityLevel::Normal > VerbosityLevel::Quiet);
+    assert!(VerbosityLevel::Verbose > VerbosityLevel::Normal);
+    assert!(VerbosityLevel::Verbose > VerbosityLevel::Quiet);
 }
