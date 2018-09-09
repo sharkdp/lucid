@@ -2,6 +2,7 @@ extern crate ctrlc;
 #[macro_use]
 extern crate clap;
 
+use std::io::{self, Write};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use std::{thread, time};
@@ -19,6 +20,23 @@ impl LucidError {
         match self {
             LucidError::DurationParseError => "Could not parse 'duration' argument",
             LucidError::DurationNegative => "Duration can not be negative",
+        }
+    }
+}
+
+struct OutputHandler<'a> {
+    handle: io::StdoutLock<'a>,
+    verbose: bool,
+}
+
+impl<'a> OutputHandler<'a> {
+    fn new(handle: io::StdoutLock<'a>, verbose: bool) -> Self {
+        OutputHandler { handle, verbose }
+    }
+
+    fn print(&mut self, msg: &str) {
+        if self.verbose {
+            writeln!(self.handle, "{}", msg).ok();
         }
     }
 }
@@ -50,6 +68,11 @@ fn run() -> Result<()> {
             Arg::with_name("duration")
                 .help("sleep time in seconds")
                 .required(true),
+        ).arg(
+            Arg::with_name("verbose")
+                .long("verbose")
+                .short("v")
+                .help("Be verbose"),
         );
 
     let matches = app.get_matches();
@@ -61,7 +84,15 @@ fn run() -> Result<()> {
         .map_err(|_| LucidError::DurationParseError)
         .and_then(duration_from_float)?;
 
-    println!("Going to sleep for {}", duration_as_str(&sleeping_duration));
+    let verbose = matches.is_present("verbose");
+
+    let stdout = io::stdout();
+    let mut output = OutputHandler::new(stdout.lock(), verbose);
+
+    output.print(&format!(
+        "Going to sleep for {}",
+        duration_as_str(&sleeping_duration)
+    ));
 
     let start_time = time::Instant::now();
 
@@ -78,7 +109,7 @@ fn run() -> Result<()> {
         let since_start = start_time.elapsed();
 
         if !running.load(Ordering::SeqCst) {
-            println!("Caught termination signal - interrupting sleep.");
+            output.print("Caught termination signal - interrupting sleep.");
             break;
         }
 
@@ -96,10 +127,16 @@ fn run() -> Result<()> {
             thread::sleep(cycle_time);
         }
 
-        println!("Still dreaming after {}", duration_as_str(&since_start));
+        output.print(&format!(
+            "Still dreaming after {}",
+            duration_as_str(&since_start)
+        ));
     }
 
-    println!("Waking up after {}", duration_as_str(&start_time.elapsed()));
+    output.print(&format!(
+        "Waking up after {}",
+        duration_as_str(&start_time.elapsed())
+    ));
 
     Ok(())
 }
