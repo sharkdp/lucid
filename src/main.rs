@@ -26,17 +26,18 @@ impl LucidError {
 
 struct OutputHandler<'a> {
     handle: io::StdoutLock<'a>,
+    prefix: &'a str,
     verbose: bool,
 }
 
 impl<'a> OutputHandler<'a> {
-    fn new(handle: io::StdoutLock<'a>, verbose: bool) -> Self {
-        OutputHandler { handle, verbose }
+    fn new(handle: io::StdoutLock<'a>, prefix: &'a str, verbose: bool) -> Self {
+        OutputHandler { handle, prefix, verbose }
     }
 
     fn print(&mut self, msg: &str) {
         if self.verbose {
-            writeln!(self.handle, "{}", msg).ok();
+            writeln!(self.handle, "{} {}", self.prefix, msg).ok();
         }
     }
 }
@@ -74,6 +75,13 @@ fn run() -> Result<()> {
                 .short("v")
                 .help("Be verbose"),
         ).arg(
+            Arg::with_name("prefix")
+                .long("prefix")
+                .short("p")
+                .takes_value(true)
+                .default_value("[lucid]:")
+                .help("Prefix all messages with the given string"),
+        ).arg(
             Arg::with_name("no-interrupt")
                 .long("no-interrupt")
                 .short("I")
@@ -93,8 +101,10 @@ fn run() -> Result<()> {
 
     let no_interrupt = matches.is_present("no-interrupt");
 
+    let prefix = matches.value_of("prefix").unwrap_or("lucid");
+
     let stdout = io::stdout();
-    let mut output = OutputHandler::new(stdout.lock(), verbose);
+    let mut output = OutputHandler::new(stdout.lock(), prefix, verbose);
 
     output.print(&format!(
         "Going to sleep for {}",
@@ -111,7 +121,7 @@ fn run() -> Result<()> {
     }).expect("Error while setting up signal handler.");
 
     // Main loop
-    let cycle_time = time::Duration::from_millis(100); // TODO
+    let cycle_time = time::Duration::from_millis(100);
     loop {
         let since_start = start_time.elapsed();
 
