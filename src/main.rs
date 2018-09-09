@@ -62,7 +62,7 @@ impl<'a> OutputHandler<'a> {
     }
 
     fn print_with_prefix(&mut self, msg: &str) {
-        writeln!(self.handle, "{} {}", self.prefix, msg).ok();
+        writeln!(self.handle, "[{}]: {}", self.prefix, msg).ok();
     }
 }
 
@@ -109,7 +109,7 @@ fn run() -> Result<()> {
                 .long("prefix")
                 .short("p")
                 .takes_value(true)
-                .default_value("[lucid]:")
+                .default_value("lucid")
                 .help("Prefix all messages with the given string"),
         ).arg(
             Arg::with_name("no-interrupt")
@@ -164,6 +164,7 @@ fn run() -> Result<()> {
         if !running.load(Ordering::SeqCst) {
             if no_interrupt {
                 output.print("Ignoring termination signal.");
+                running.store(true, Ordering::SeqCst);
             } else {
                 output.print("Caught termination signal - interrupting sleep.");
                 break;
