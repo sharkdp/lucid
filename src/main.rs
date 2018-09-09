@@ -73,6 +73,11 @@ fn run() -> Result<()> {
                 .long("verbose")
                 .short("v")
                 .help("Be verbose"),
+        ).arg(
+            Arg::with_name("no-interrupt")
+                .long("no-interrupt")
+                .short("I")
+                .help("Do not terminate when receiving SIGINT/SIGTERM signals"),
         );
 
     let matches = app.get_matches();
@@ -85,6 +90,8 @@ fn run() -> Result<()> {
         .and_then(duration_from_float)?;
 
     let verbose = matches.is_present("verbose");
+
+    let no_interrupt = matches.is_present("no-interrupt");
 
     let stdout = io::stdout();
     let mut output = OutputHandler::new(stdout.lock(), verbose);
@@ -109,8 +116,12 @@ fn run() -> Result<()> {
         let since_start = start_time.elapsed();
 
         if !running.load(Ordering::SeqCst) {
-            output.print("Caught termination signal - interrupting sleep.");
-            break;
+            if no_interrupt {
+                output.print("Ignoring termination signal.");
+            } else {
+                output.print("Caught termination signal - interrupting sleep.");
+                break;
+            }
         }
 
         if since_start >= sleeping_duration {
