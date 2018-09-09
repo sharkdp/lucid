@@ -1,0 +1,12 @@
+[package]
+name = "lucid"
+version = "0.1.0"
+authors = ["sharkdp <davidpeter@web.de>"]
+
+[dependencies.ctrlc]
+version = "3.0"
+features = ["termination"]
+
+[dependencies.clap]
+version = "2"
+features = ["suggestions", "color", "wrap_help"]
