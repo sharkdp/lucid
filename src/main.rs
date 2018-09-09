@@ -15,14 +15,6 @@ enum LucidError {
     DurationNegative,
 }
 
-/// Determines how much information should be printed.
-#[derive(Debug, Clone, Copy, PartialEq, PartialOrd)]
-enum VerbosityLevel {
-    Quiet,
-    Normal,
-    Verbose,
-}
-
 impl LucidError {
     fn message(&self) -> &str {
         match self {
@@ -31,6 +23,16 @@ impl LucidError {
         }
     }
 }
+
+/// Determines how much information should be printed.
+#[derive(Debug, Clone, Copy, PartialEq, PartialOrd)]
+enum VerbosityLevel {
+    Quiet,
+    Normal,
+    Verbose,
+}
+
+type ExitCode = i32;
 
 struct OutputHandler<'a> {
     handle: io::StdoutLock<'a>,
@@ -83,7 +85,7 @@ fn duration_from_float(duration_sec: f64) -> Result<time::Duration> {
     Ok(time::Duration::from_millis(secs * 1000 + millisecs))
 }
 
-fn run() -> Result<()> {
+fn run() -> Result<ExitCode> {
     let app = App::new(crate_name!())
         .setting(AppSettings::ColorAuto)
         .setting(AppSettings::ColoredHelp)
@@ -109,8 +111,18 @@ fn run() -> Result<()> {
                 .long("prefix")
                 .short("p")
                 .takes_value(true)
+                .value_name("PREFIX")
                 .default_value("lucid")
                 .help("Prefix all messages with the given string"),
+        ).arg(
+            Arg::with_name("exit-code")
+                .long("exit-code")
+                .short("c")
+                .takes_value(true)
+                .value_name("CODE")
+                .allow_hyphen_values(true)
+                .default_value("0")
+                .help("Use exit code"),
         ).arg(
             Arg::with_name("no-interrupt")
                 .long("no-interrupt")
@@ -138,6 +150,11 @@ fn run() -> Result<()> {
     let no_interrupt = matches.is_present("no-interrupt");
 
     let prefix = matches.value_of("prefix").unwrap_or("lucid");
+
+    let exit_code = matches
+        .value_of("exit-code")
+        .and_then(|c| c.parse::<i32>().ok())
+        .unwrap_or(0i32);
 
     let stdout = io::stdout();
     let mut output = OutputHandler::new(stdout.lock(), prefix, verbosity_level);
@@ -196,13 +213,19 @@ fn run() -> Result<()> {
         duration_as_str(&start_time.elapsed())
     ));
 
-    Ok(())
+    Ok(exit_code)
 }
 
 fn main() {
     let result = run();
-    if let Err(err) = result {
-        eprintln!("Error: {}", err.message());
+    match result {
+        Err(err) => {
+            eprintln!("Error: {}", err.message());
+            std::process::exit(1);
+        }
+        Ok(exit_code) => {
+            std::process::exit(exit_code);
+        }
     }
 }
 
