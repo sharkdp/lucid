@@ -90,22 +90,22 @@ fn run() -> Result<ExitCode> {
         .setting(AppSettings::ColorAuto)
         .setting(AppSettings::ColoredHelp)
         .setting(AppSettings::DeriveDisplayOrder)
+        .setting(AppSettings::UnifiedHelpMessage)
         .version(crate_version!())
-        .arg(
-            Arg::with_name("duration")
-                .help("sleep time in seconds")
-                .required(true),
-        ).arg(
+        .arg(Arg::with_name("duration").help(
+            "Sleep time in seconds. If no duration is given, \
+             the process will sleep forever.",
+        )).arg(
             Arg::with_name("verbose")
                 .long("verbose")
                 .short("v")
-                .help("Be verbose"),
+                .help("Be noisy."),
         ).arg(
             Arg::with_name("quiet")
                 .long("quiet")
                 .short("q")
                 .conflicts_with("verbose")
-                .help("Do not output anything"),
+                .help("Do not output anything."),
         ).arg(
             Arg::with_name("prefix")
                 .long("prefix")
@@ -113,7 +113,7 @@ fn run() -> Result<ExitCode> {
                 .takes_value(true)
                 .value_name("PREFIX")
                 .default_value("lucid")
-                .help("Prefix all messages with the given string"),
+                .help("Prefix all messages with the given string."),
         ).arg(
             Arg::with_name("exit-code")
                 .long("exit-code")
@@ -122,13 +122,14 @@ fn run() -> Result<ExitCode> {
                 .value_name("CODE")
                 .allow_hyphen_values(true)
                 .default_value("0")
-                .help("Use exit code"),
+                .help("Terminate with the given exit code."),
         ).arg(
             Arg::with_name("no-interrupt")
                 .long("no-interrupt")
                 .short("I")
-                .help("Do not terminate when receiving SIGINT/SIGTERM signals"),
-        );
+                .help("Do not terminate when receiving SIGINT/SIGTERM signals."),
+        ).help_message("Print help information.")
+        .version_message("Print version information.");
 
     let matches = app.get_matches();
 
