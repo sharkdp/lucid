@@ -12,34 +12,40 @@ Applications or scripts that handle child processes need to handle a lot of diff
 scenarios.
 
 There are very simple processes that successfully terminate after a short period of time:
-```
+``` bash
 lucid 2
 ```
 
 Others also finish after some time but fail with a non-zero exit code:
-```
+``` bash
 lucid 3 --exit-code=1
 ```
 
 Some processes run forever (but can be terminated via `SIGINT` or `SIGTERM`)
-```
+``` bash
 lucid
 ```
 
 Others refuse to handle termination signals properly and just ignore them:
-```
+``` bash
 lucid 10 --no-interrupt
 ```
 
 Many processes output a lot on standard output:
-```
+``` bash
 lucid 10 --verbose
 ```
 
 Others generate a lot of error messages:
-```
+``` bash
 lucid 10 --stderr --verbose
 ```
+
+When several child processes run in parallel, their messages are interleaved:
+``` bash
+lucid -v --prefix "lucid 1" 5 &; lucid -v --prefix "lucid 2" 10
+````
+
 
 ## Usage
 ```
