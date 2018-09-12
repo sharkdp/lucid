@@ -133,12 +133,15 @@ fn run() -> Result<ExitCode> {
 
     let matches = app.get_matches();
 
-    let sleeping_duration = matches
-        .value_of("duration")
-        .expect("duration is a required argument")
-        .parse::<f64>()
-        .map_err(|_| LucidError::DurationParseError)
-        .and_then(duration_from_float)?;
+    let sleeping_duration = match matches.value_of("duration") {
+        None => None,
+        Some(duration) => Some(
+            duration
+                .parse::<f64>()
+                .map_err(|_| LucidError::DurationParseError)
+                .and_then(duration_from_float)?,
+        ),
+    };
 
     let verbosity_level = if matches.is_present("verbose") {
         VerbosityLevel::Verbose
@@ -160,10 +163,17 @@ fn run() -> Result<ExitCode> {
     let stdout = io::stdout();
     let mut output = OutputHandler::new(stdout.lock(), prefix, verbosity_level);
 
-    output.print(&format!(
-        "Going to sleep for {}",
-        duration_as_str(&sleeping_duration)
-    ));
+    match sleeping_duration {
+        None => {
+            output.print(&format!("Going to sleep forever"));
+        }
+        Some(sleeping_duration) => {
+            output.print(&format!(
+                "Going to sleep for {}",
+                duration_as_str(&sleeping_duration)
+            ));
+        }
+    }
 
     let start_time = time::Instant::now();
 
@@ -189,15 +199,19 @@ fn run() -> Result<ExitCode> {
             }
         }
 
-        if since_start >= sleeping_duration {
-            break;
-        }
-
-        if since_start + cycle_time > sleeping_duration {
-            if sleeping_duration > since_start {
-                thread::sleep(sleeping_duration - since_start);
-            } else {
+        if let Some(sleeping_duration) = sleeping_duration {
+            if since_start >= sleeping_duration {
                 break;
+            }
+
+            if since_start + cycle_time > sleeping_duration {
+                if sleeping_duration > since_start {
+                    thread::sleep(sleeping_duration - since_start);
+                } else {
+                    break;
+                }
+            } else {
+                thread::sleep(cycle_time);
             }
         } else {
             thread::sleep(cycle_time);
