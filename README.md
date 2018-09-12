@@ -31,6 +31,16 @@ Others refuse to handle termination signals properly and just ignore them:
 lucid 10 --no-interrupt
 ```
 
+Many processes output a lot on standard output:
+```
+lucid 10 --verbose
+```
+
+Others generate a lot of error messages:
+```
+lucid 10 --stderr --verbose
+```
+
 ## Usage
 ```
 USAGE:
