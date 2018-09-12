@@ -59,3 +59,9 @@ OPTIONS:
 ARGS:
     <duration>    Sleep time in seconds. If no duration is given, the process will sleep forever.
 ```
+
+## Installation
+
+```
+cargo install lucid
+```
