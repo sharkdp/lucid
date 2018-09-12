@@ -35,17 +35,27 @@ enum VerbosityLevel {
 type ExitCode = i32;
 
 struct OutputHandler<'a> {
-    handle: io::StdoutLock<'a>,
+    stdout: io::StdoutLock<'a>,
+    stderr: io::StderrLock<'a>,
     prefix: &'a str,
     verbosity_level: VerbosityLevel,
+    print_to_stderr: bool,
 }
 
 impl<'a> OutputHandler<'a> {
-    fn new(handle: io::StdoutLock<'a>, prefix: &'a str, verbosity_level: VerbosityLevel) -> Self {
+    fn new(
+        stdout: io::StdoutLock<'a>,
+        stderr: io::StderrLock<'a>,
+        prefix: &'a str,
+        verbosity_level: VerbosityLevel,
+        print_to_stderr: bool,
+    ) -> Self {
         OutputHandler {
-            handle,
+            stdout,
+            stderr,
             prefix,
             verbosity_level,
+            print_to_stderr,
         }
     }
 
@@ -64,7 +74,12 @@ impl<'a> OutputHandler<'a> {
     }
 
     fn print_with_prefix(&mut self, msg: &str) {
-        writeln!(self.handle, "[{}]: {}", self.prefix, msg).ok();
+        let mut handle: Box<Write> = if self.print_to_stderr {
+            Box::new(&mut self.stderr)
+        } else {
+            Box::new(&mut self.stdout)
+        };
+        writeln!(handle, "[{}]: {}", self.prefix, msg).ok();
     }
 }
 
@@ -124,6 +139,11 @@ fn run() -> Result<ExitCode> {
                 .default_value("0")
                 .help("Terminate with the given exit code."),
         ).arg(
+            Arg::with_name("stderr")
+                .long("stderr")
+                .short("e")
+                .help("Print all messages to stderr."),
+        ).arg(
             Arg::with_name("no-interrupt")
                 .long("no-interrupt")
                 .short("I")
@@ -161,7 +181,14 @@ fn run() -> Result<ExitCode> {
         .unwrap_or(0i32);
 
     let stdout = io::stdout();
-    let mut output = OutputHandler::new(stdout.lock(), prefix, verbosity_level);
+    let stderr = io::stderr();
+    let mut output = OutputHandler::new(
+        stdout.lock(),
+        stderr.lock(),
+        prefix,
+        verbosity_level,
+        matches.is_present("stderr"),
+    );
 
     match sleeping_duration {
         None => {
