@@ -1,6 +1,8 @@
 lucid
 =====
 
+[![Build Status](https://travis-ci.org/sharkdp/lucid.svg?branch=master)](https://travis-ci.org/sharkdp/lucid)
+
 A simple mock-application that can be used by other programs that work with child processes.
 
 `lucid` is similar to `sleep`, but has a few additional features that can be helpful
