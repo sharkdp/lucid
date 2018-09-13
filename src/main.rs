@@ -16,6 +16,7 @@ use nix::unistd;
 enum LucidError {
     DurationParseError,
     DurationNegative,
+    FailedToDaemonize,
 }
 
 impl LucidError {
@@ -23,6 +24,7 @@ impl LucidError {
         match self {
             LucidError::DurationParseError => "Could not parse 'duration' argument",
             LucidError::DurationNegative => "Duration can not be negative",
+            LucidError::FailedToDaemonize => "Failed to daemonize itself",
         }
     }
 }
@@ -147,6 +149,11 @@ fn run() -> Result<ExitCode> {
                 .short("e")
                 .help("Print all messages to stderr."),
         ).arg(
+            Arg::with_name("daemon")
+                .long("daemon")
+                .short("d")
+                .help("Daemonize the process after launching."),
+        ).arg(
             Arg::with_name("no-interrupt")
                 .long("no-interrupt")
                 .short("I")
@@ -192,6 +199,11 @@ fn run() -> Result<ExitCode> {
         verbosity_level,
         matches.is_present("stderr"),
     );
+
+    if matches.is_present("daemon") {
+        output.print_verbose("Daemonizing..");
+        unistd::daemon(true, true).map_err(|_| LucidError::FailedToDaemonize)?;
+    }
 
     // Print status information
     output.print_verbose(&format!(
