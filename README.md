@@ -6,6 +6,11 @@ A simple mock-application that can be used by other programs that work with chil
 `lucid` is similar to `sleep`, but has a few additional features that can be helpful
 when debugging applications that spawn subprocesses.
 
+## Demo
+
+<img src="https://cdn.rawgit.com/sharkdp/lucid/f15d7387/lucid.svg" alt="lucid demo">
+
+
 ## Introduction
 
 Applications or scripts that handle child processes need to deal with a lot of different
