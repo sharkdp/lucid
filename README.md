@@ -26,22 +26,22 @@ Some processes just **run forever** (but can be terminated via `SIGINT` or `SIGT
 lucid
 ```
 
-Others refuse to handle termination signals properly and just ignore them:
+Others refuse to handle **termination signals** properly and just ignore them:
 ``` bash
 lucid 10 --no-interrupt
 ```
 
-There are also processes that choose to daemonize themselves immediately:
+There are also processes that choose to **daemonize** themselves immediately:
 ``` bash
 lucid 10 --daemon
 ```
 
-Many processes print a lot on standard output:
+Many processes print a lot on **standard output**:
 ``` bash
 lucid 10 --verbose
 ```
 
-While some others might generate error messages:
+While some others might generate **error messages**:
 ``` bash
 lucid 10 --stderr --verbose
 ```
