@@ -116,25 +116,6 @@ fn run() -> Result<ExitCode> {
             "Sleep time in seconds. If no duration is given, \
              the process will sleep forever.",
         )).arg(
-            Arg::with_name("verbose")
-                .long("verbose")
-                .short("v")
-                .help("Be noisy."),
-        ).arg(
-            Arg::with_name("quiet")
-                .long("quiet")
-                .short("q")
-                .conflicts_with("verbose")
-                .help("Do not output anything."),
-        ).arg(
-            Arg::with_name("prefix")
-                .long("prefix")
-                .short("p")
-                .takes_value(true)
-                .value_name("PREFIX")
-                .default_value("lucid")
-                .help("Prefix all messages with the given string."),
-        ).arg(
             Arg::with_name("exit-code")
                 .long("exit-code")
                 .short("c")
@@ -142,24 +123,42 @@ fn run() -> Result<ExitCode> {
                 .value_name("CODE")
                 .allow_hyphen_values(true)
                 .default_value("0")
-                .help("Terminate with the given exit code."),
-        ).arg(
-            Arg::with_name("stderr")
-                .long("stderr")
-                .short("e")
-                .help("Print all messages to stderr."),
+                .help("Terminate with the given exit code"),
         ).arg(
             Arg::with_name("daemon")
                 .long("daemon")
                 .short("d")
-                .help("Daemonize the process after launching."),
+                .help("Daemonize the process after launching"),
         ).arg(
             Arg::with_name("no-interrupt")
                 .long("no-interrupt")
                 .short("I")
-                .help("Do not terminate when receiving SIGINT/SIGTERM signals."),
-        ).help_message("Print help information.")
-        .version_message("Print version information.");
+                .help("Do not terminate when receiving SIGINT/SIGTERM signals"),
+        ).arg(
+            Arg::with_name("prefix")
+                .long("prefix")
+                .short("p")
+                .takes_value(true)
+                .value_name("PREFIX")
+                .default_value("lucid")
+                .help("Prefix all messages with the given string"),
+        ).arg(
+            Arg::with_name("verbose")
+                .long("verbose")
+                .short("v")
+                .help("Be noisy"),
+        ).arg(
+            Arg::with_name("quiet")
+                .long("quiet")
+                .short("q")
+                .conflicts_with("verbose")
+                .help("Do not output anything"),
+        ).arg(
+            Arg::with_name("stderr")
+                .long("stderr")
+                .short("e")
+                .help("Print all messages to stderr"),
+        );
 
     let matches = app.get_matches();
 
