@@ -75,6 +75,19 @@ ARGS:
 
 ## Installation
 
+### On Debian-based systems
+
+``` bash
+wget "https://github.com/sharkdp/lucid/releases/download/v0.3.0/lucid_0.3.0_amd64.deb"
+sudo dpkg -i lucid_0.3.0_amd64.deb
+```
+
+### On other distrubutions
+
+Check out the [release page](https://github.com/sharkdp/lucid/releases) for binary builds.
+
+### Via cargo
+
 ```
 cargo install lucid
 ```
