@@ -1,6 +1,7 @@
 extern crate ctrlc;
 #[macro_use]
 extern crate clap;
+extern crate nix;
 
 use std::io::{self, Write};
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -8,6 +9,8 @@ use std::sync::Arc;
 use std::{thread, time};
 
 use clap::{App, AppSettings, Arg};
+
+use nix::unistd;
 
 #[derive(Debug, PartialEq)]
 enum LucidError {
@@ -189,6 +192,16 @@ fn run() -> Result<ExitCode> {
         verbosity_level,
         matches.is_present("stderr"),
     );
+
+    // Print status information
+    output.print_verbose(&format!(
+        "getcwd() = {}",
+        unistd::getcwd()
+            .map(|p| p.to_string_lossy().into_owned())
+            .map(|s| format!("\"{}\"", s))
+            .unwrap_or("<error: could not read current working directory>".into())
+    ));
+    output.print_verbose(&format!("getpid() = {}", unistd::getpid()));
 
     match sleeping_duration {
         None => {
