@@ -52,15 +52,15 @@ USAGE:
     lucid [OPTIONS] [duration]
 
 OPTIONS:
-    -v, --verbose             Be noisy.
-    -q, --quiet               Do not output anything.
-    -p, --prefix <PREFIX>     Prefix all messages with the given string. [default: lucid]
-    -c, --exit-code <CODE>    Terminate with the given exit code. [default: 0]
-    -e, --stderr              Print all messages to stderr.
-    -d, --daemon              Daemonize the process after launching.
-    -I, --no-interrupt        Do not terminate when receiving SIGINT/SIGTERM signals.
-    -h, --help                Print help information.
-    -V, --version             Print version information.
+    -c, --exit-code <CODE>    Terminate with the given exit code [default: 0]
+    -d, --daemon              Daemonize the process after launching
+    -I, --no-interrupt        Do not terminate when receiving SIGINT/SIGTERM signals
+    -p, --prefix <PREFIX>     Prefix all messages with the given string [default: lucid]
+    -v, --verbose             Be noisy
+    -q, --quiet               Do not output anything
+    -e, --stderr              Print all messages to stderr
+    -h, --help                Prints help information
+    -V, --version             Prints version information
 
 ARGS:
     <duration>    Sleep time in seconds. If no duration is given, the process will sleep forever.
