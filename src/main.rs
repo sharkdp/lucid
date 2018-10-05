@@ -115,7 +115,14 @@ fn run() -> Result<ExitCode> {
         .arg(Arg::with_name("duration").help(
             "Sleep time in seconds. If no duration is given, \
              the process will sleep forever.",
-        )).arg(
+        ))
+        .arg(
+            Arg::with_name("ignored")
+                .help("Additional arguments are ignored")
+                .hidden(true)
+                .multiple(true),
+        )
+        .arg(
             Arg::with_name("exit-code")
                 .long("exit-code")
                 .short("c")
@@ -124,17 +131,20 @@ fn run() -> Result<ExitCode> {
                 .allow_hyphen_values(true)
                 .default_value("0")
                 .help("Terminate with the given exit code"),
-        ).arg(
+        )
+        .arg(
             Arg::with_name("daemon")
                 .long("daemon")
                 .short("d")
                 .help("Daemonize the process after launching"),
-        ).arg(
+        )
+        .arg(
             Arg::with_name("no-interrupt")
                 .long("no-interrupt")
                 .short("I")
                 .help("Do not terminate when receiving SIGINT/SIGTERM signals"),
-        ).arg(
+        )
+        .arg(
             Arg::with_name("prefix")
                 .long("prefix")
                 .short("p")
@@ -142,18 +152,21 @@ fn run() -> Result<ExitCode> {
                 .value_name("PREFIX")
                 .default_value("lucid")
                 .help("Prefix all messages with the given string"),
-        ).arg(
+        )
+        .arg(
             Arg::with_name("verbose")
                 .long("verbose")
                 .short("v")
                 .help("Be noisy"),
-        ).arg(
+        )
+        .arg(
             Arg::with_name("quiet")
                 .long("quiet")
                 .short("q")
                 .conflicts_with("verbose")
                 .help("Do not output anything"),
-        ).arg(
+        )
+        .arg(
             Arg::with_name("stderr")
                 .long("stderr")
                 .short("e")
@@ -233,7 +246,8 @@ fn run() -> Result<ExitCode> {
     let r = running.clone();
     ctrlc::set_handler(move || {
         r.store(false, Ordering::SeqCst);
-    }).expect("Error while setting up signal handler.");
+    })
+    .expect("Error while setting up signal handler.");
 
     // Main loop
     let cycle_time = time::Duration::from_millis(100);
