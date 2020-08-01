@@ -79,7 +79,7 @@ impl<'a> OutputHandler<'a> {
     }
 
     fn print_with_prefix(&mut self, msg: &str) {
-        let mut handle: Box<Write> = if self.print_to_stderr {
+        let mut handle: Box<dyn Write> = if self.print_to_stderr {
             Box::new(&mut self.stderr)
         } else {
             Box::new(&mut self.stdout)
