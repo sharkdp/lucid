@@ -10,7 +10,7 @@ repository = "https://github.com/sharkdp/lucid"
 version = "0.3.0"
 
 [dependencies]
-nix = "0.20"
+nix = "0.21"
 
 [dependencies.ctrlc]
 version = "3.1"
