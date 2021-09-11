@@ -222,7 +222,7 @@ fn run() -> Result<ExitCode> {
         unistd::getcwd()
             .map(|p| p.to_string_lossy().into_owned())
             .map(|s| format!("\"{}\"", s))
-            .unwrap_or("<error: could not read current working directory>".into())
+            .unwrap_or_else(|_| "<error: could not read current working directory>".into())
     ));
     output.print_verbose(&format!("getpid() = {}", unistd::getpid()));
 
