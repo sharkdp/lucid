@@ -72,9 +72,8 @@ impl<'a> OutputHandler<'a> {
     }
 
     fn print_verbose(&mut self, msg: &str) {
-        match self.verbosity_level {
-            VerbosityLevel::Verbose => self.print_with_prefix(msg),
-            _ => {}
+        if self.verbosity_level == VerbosityLevel::Verbose {
+            self.print_with_prefix(msg)
         }
     }
 
