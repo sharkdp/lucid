@@ -228,7 +228,7 @@ fn run() -> Result<ExitCode> {
 
     match sleeping_duration {
         None => {
-            output.print(&format!("Going to sleep forever"));
+            output.print(&("Going to sleep forever").to_string());
         }
         Some(sleeping_duration) => {
             output.print(&format!(
