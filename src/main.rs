@@ -1,14 +1,9 @@
-extern crate ctrlc;
-#[macro_use]
-extern crate clap;
-extern crate nix;
-
 use std::io::{self, Write};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use std::{thread, time};
 
-use clap::{App, AppSettings, Arg};
+use clap::{Command, AppSettings, Arg, crate_version, crate_name};
 
 use nix::unistd;
 
@@ -105,26 +100,23 @@ fn duration_from_float(duration_sec: f64) -> Result<time::Duration> {
 }
 
 fn run() -> Result<ExitCode> {
-    let app = App::new(crate_name!())
-        .setting(AppSettings::ColorAuto)
-        .setting(AppSettings::ColoredHelp)
+    let app = Command::new(crate_name!())
         .setting(AppSettings::DeriveDisplayOrder)
-        .setting(AppSettings::UnifiedHelpMessage)
         .version(crate_version!())
-        .arg(Arg::with_name("duration").help(
+        .arg(Arg::new("duration").help(
             "Sleep time in seconds. If no duration is given, \
              the process will sleep forever.",
         ))
         .arg(
-            Arg::with_name("ignored")
+            Arg::new("ignored")
                 .help("Additional arguments are ignored")
-                .hidden(true)
-                .multiple(true),
+                .hide(true)
+                .multiple_occurrences(true),
         )
         .arg(
-            Arg::with_name("exit-code")
+            Arg::new("exit-code")
                 .long("exit-code")
-                .short("c")
+                .short('c')
                 .takes_value(true)
                 .value_name("CODE")
                 .allow_hyphen_values(true)
@@ -132,43 +124,43 @@ fn run() -> Result<ExitCode> {
                 .help("Terminate with the given exit code"),
         )
         .arg(
-            Arg::with_name("daemon")
+            Arg::new("daemon")
                 .long("daemon")
-                .short("d")
+                .short('d')
                 .help("Daemonize the process after launching"),
         )
         .arg(
-            Arg::with_name("no-interrupt")
+            Arg::new("no-interrupt")
                 .long("no-interrupt")
-                .short("I")
+                .short('I')
                 .help("Do not terminate when receiving SIGINT/SIGTERM signals"),
         )
         .arg(
-            Arg::with_name("prefix")
+            Arg::new("prefix")
                 .long("prefix")
-                .short("p")
+                .short('p')
                 .takes_value(true)
                 .value_name("PREFIX")
                 .default_value("lucid")
                 .help("Prefix all messages with the given string"),
         )
         .arg(
-            Arg::with_name("verbose")
+            Arg::new("verbose")
                 .long("verbose")
-                .short("v")
+                .short('v')
                 .help("Be noisy"),
         )
         .arg(
-            Arg::with_name("quiet")
+            Arg::new("quiet")
                 .long("quiet")
-                .short("q")
+                .short('q')
                 .conflicts_with("verbose")
                 .help("Do not output anything"),
         )
         .arg(
-            Arg::with_name("stderr")
+            Arg::new("stderr")
                 .long("stderr")
-                .short("e")
+                .short('e')
                 .help("Print all messages to stderr"),
         );
 
