@@ -3,7 +3,7 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use std::{thread, time};
 
-use clap::{Command, AppSettings, Arg, crate_version, crate_name};
+use clap::{crate_name, crate_version, AppSettings, Arg, Command};
 
 use nix::unistd;
 
@@ -220,7 +220,7 @@ fn run() -> Result<ExitCode> {
 
     match sleeping_duration {
         None => {
-            output.print(&("Going to sleep forever").to_string());
+            output.print("Going to sleep forever");
         }
         Some(sleeping_duration) => {
             output.print(&format!(
